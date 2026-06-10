@@ -1,4 +1,5 @@
 #include <iostream>
+#include "PasswordEntry.hpp"
 
 int main()
 {

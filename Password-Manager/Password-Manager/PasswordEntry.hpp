@@ -5,13 +5,10 @@
 class PasswordEntry {
 public:
 	PasswordEntry() = delete;
-	PasswordEntry(const char* website, const char* user, const char* password, const Cipher& cipher);
+	PasswordEntry(const char* website, const char* username, const char* password, const Cipher& cipher);
 	PasswordEntry(const PasswordEntry& other);
 	PasswordEntry& operator= (const PasswordEntry& other);
 	~PasswordEntry();
-
-	//засега няма да пиша сетъри, не знам дали са ми нужни или дали не биха били опасни
-	//за валидността на обектите
 	
 	//getters
 	const char* getWebsite() const;
@@ -30,6 +27,6 @@ public:
 private:
 	char* website;
 	char* username;
-	char* password;
+	char* encryptedPassword; //PasswordEntry не съхранява чистата парола, а само криптираната
 	Cipher* cipher;
 };
