@@ -52,4 +52,42 @@ PasswordEntry::PasswordEntry(const char* website, const char* username, const ch
 
 PasswordEntry::PasswordEntry(const PasswordEntry& other)
 {
+	this->website = new char[strlen(other.website) + 1];
+
+	this->username = new (std::nothrow) char[strlen(other.username) + 1];
+	if (!this->username) {
+		delete[] this->website;
+		throw std::bad_alloc();
+	}
+
+	this->encryptedPassword = new (std::nothrow) char[strlen(other.encryptedPassword) + 1];
+	if (!this->encryptedPassword) {
+		delete[] this->website;
+		delete[] this->username;
+		throw std::bad_alloc();
+	}
+
+	//clone() can throw an exception
+	try {
+		this->cipher = other.cipher->clone();
+	}
+	catch (...) {
+		delete[] this->website;
+		delete[] this->username;
+		delete[] this->encryptedPassword;
+		throw;
+	}
+
+	strcpy(this->website, other.website);
+	strcpy(this->username, other.username);
+	strcpy(this->encryptedPassword, other.encryptedPassword);
+}
+
+PasswordEntry& PasswordEntry::operator=(const PasswordEntry& other)
+{
+	if (this != &other) {
+		
+	}
+
+	return *this;
 }
