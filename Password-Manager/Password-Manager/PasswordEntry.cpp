@@ -208,5 +208,9 @@ void PasswordEntry::serialize(std::ostream& out) const
 
 bool PasswordEntry::isMatch(const char* website, const char* username) const
 {
+	if (!website || !username) {
+		return false;
+	}
+
 	return strcmp(this->website, website) == 0 && strcmp(this->username, username) == 0;
 }

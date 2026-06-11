@@ -117,3 +117,53 @@ DataVault::~DataVault()
 
 	delete this->defaultCipher;
 }
+
+//helpers
+void DataVault::addEntry(const PasswordEntry& entry)
+{
+	if (this->size == this->allocated) {
+		resize();
+	}
+
+	if (find(entry.getWebsite(), entry.getUsername()) != nullptr) {
+		throw std::invalid_argument("Entry already exists!");
+	}
+
+	this->entries[this->size] = new PasswordEntry(entry);
+	this->size += 1;
+}
+
+PasswordEntry* DataVault::find(const char* website, const char* username) const
+{
+	if (!website || !username) {
+		return nullptr;
+	}
+
+	for (size_t i = 0; i < this->size; i++) {
+		if (this->entries[i]->isMatch(website, username)) {
+			return this->entries[i];
+		}
+	}
+
+	return nullptr;
+}
+
+//private helpers
+void DataVault::resize()
+{
+	PasswordEntry** tempEntries = new (std::nothrow) PasswordEntry * [this->allocated * 2];
+	if (!tempEntries) {
+		throw std::runtime_error("Memory allocation error due to internal resize method, please try again!");
+	}
+
+	for (size_t i = 0; i < this->allocated; i++) {
+		tempEntries[i] = this->entries[i];
+	}
+	for (size_t i = this->allocated; i < this->allocated * 2; i++) {
+		tempEntries[i] = nullptr;
+	}
+
+	delete[] this->entries;
+	this->entries = tempEntries;
+	this->allocated *= 2;
+}
