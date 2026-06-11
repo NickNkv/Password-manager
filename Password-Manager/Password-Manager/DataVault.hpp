@@ -11,7 +11,7 @@ public:
 	~DataVault();
 
 	//getters and setters
-	//TODO
+	//may not be needed
 
 	//helpers
 	void addEntry(const PasswordEntry& entry);

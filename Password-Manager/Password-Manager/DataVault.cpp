@@ -44,7 +44,7 @@ DataVault::DataVault(const DataVault& other)
 		}
 
 		try {
-			this->entries[i] = new (std::nothrow) PasswordEntry(*other.entries[i]);
+			this->entries[i] = new PasswordEntry(*other.entries[i]);
 		}
 		catch(...) {
 			for (size_t j = 0; j < i; j++) {
@@ -55,4 +55,65 @@ DataVault::DataVault(const DataVault& other)
 			throw;
 		}
 	}
+}
+
+DataVault& DataVault::operator=(const DataVault& other)
+{
+	if (this != &other) {
+		//clone() can throw an exception
+		Cipher* tempCipher = other.defaultCipher->clone();
+
+		PasswordEntry** tempEntries = new (std::nothrow) PasswordEntry * [other.allocated];
+		if (!tempEntries) {
+			delete tempCipher;
+			throw std::bad_alloc();
+		}
+
+		for (size_t i = 0; i < other.allocated; i++) {
+			if (!other.entries[i]) {
+				tempEntries[i] = nullptr;
+				continue;
+			}
+
+			try {
+				tempEntries[i] = new PasswordEntry(*other.entries[i]);
+			}
+			catch (...) {
+				for (size_t j = 0; j < i; j++) {
+					delete tempEntries[j];
+				}
+				delete[] tempEntries;
+				delete tempCipher;
+				throw;
+			}
+		}
+
+		//point of no return!
+		for (size_t i = 0; i < this->allocated; i++) {
+			delete this->entries[i];
+		}
+		delete[] this->entries;
+
+		delete this->defaultCipher;
+
+		this->size = other.size;
+		this->allocated = other.allocated;
+		this->defaultCipher = tempCipher;
+		this->entries = tempEntries;
+
+		tempEntries = nullptr;
+		tempCipher = nullptr;
+	}
+
+	return *this;
+}
+
+DataVault::~DataVault()
+{
+	for (size_t i = 0; i < this->allocated; i++) {
+		delete this->entries[i];
+	}
+	delete[] this->entries;
+
+	delete this->defaultCipher;
 }
