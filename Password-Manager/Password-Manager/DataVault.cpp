@@ -148,6 +148,79 @@ PasswordEntry* DataVault::find(const char* website, const char* username) const
 	return nullptr;
 }
 
+void DataVault::updateEntry(const char* website, const char* username, const char* newPassword)
+{
+	PasswordEntry* entry = find(website, username);
+	if (!entry) {
+		throw std::invalid_argument("Entry not found!");
+	}
+
+	//updatePassword() can throw an exception!
+	entry->updatePassword(newPassword);
+}
+
+void DataVault::removeEntry(const char* website, const char* name)
+{
+	size_t index = this->size;
+
+	for (size_t i = 0; i < this->size; i++) {
+		if (this->entries[i]->isMatch(website, name)) {
+			index = i;
+			break;
+		}
+	}
+
+	if (index == this->size) {
+		throw std::invalid_argument("Entry not found!");
+	}
+
+	delete this->entries[index];
+
+	for (size_t i = index; i < this->size - 1; i++) {
+		this->entries[i] = this->entries[i + 1];
+	}
+
+	this->entries[this->size - 1] = nullptr;
+	this->size -= 1;
+}
+
+void DataVault::removeWebsite(const char* website)
+{
+	if (!website) {
+		throw std::invalid_argument("Website can not be nullptr!");
+	}
+
+	size_t i = 0;
+
+	while (i < this->size) {
+		if (strcmp(this->entries[i]->getWebsite(), website) == 0) {
+			delete this->entries[i];
+
+			for (size_t j = i; j < this->size - 1; j++) {
+				this->entries[j] = this->entries[j + 1];
+			}
+
+			this->entries[this->size - 1] = nullptr;
+			this->size -= 1;
+		}
+		else {
+			i++;
+		}
+	}
+}
+
+void DataVault::list() const
+{
+	//TODO pagination
+	for (size_t i = 0; i < this->size; i++) {
+		std::cout
+			<< this->entries[i]->getWebsite()
+			<< " | "
+			<< this->entries[i]->getUsername()
+			<< '\n';
+	}
+}
+
 //private helpers
 void DataVault::resize()
 {
