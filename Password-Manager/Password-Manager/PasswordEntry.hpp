@@ -13,20 +13,20 @@ public:
 	//getters
 	const char* getWebsite() const;
 	const char* getUsername() const;
-	const char* getPassword() const;
+	const char* getEncryptedPassword() const;
 	const Cipher* getCipher() const;
 
 	//setters
 	void updatePassword(const char* newPassword);
 
 	//helpers
-	const char* getEncryptedPassword() const;
+	const char* getPassword() const;
 	void serialize(std::ostream& out) const;
 	bool isMatch(const char* website, const char* username) const;
 
 private:
 	char* website;
 	char* username;
-	char* encryptedPassword; //PasswordEntry не съхранява чистата парола, а само криптираната
+	char* encryptedPassword; //PasswordEntry keeps ONLY the ENCRYPTED password
 	Cipher* cipher;
 };
