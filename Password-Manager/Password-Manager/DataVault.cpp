@@ -1,7 +1,9 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "DataVault.hpp"
+#include "CipherFactory.hpp"
 #include <iostream>
 #define ALLOC_STEP 8
+#define BUFFER_LEN 256
 
 //lifecycle
 DataVault::DataVault(const Cipher& defaultCipher)
@@ -193,7 +195,10 @@ void DataVault::removeWebsite(const char* website)
 	size_t i = 0;
 
 	while (i < this->size) {
-		if (strcmp(this->entries[i]->getWebsite(), website) == 0) {
+		if (!this->entries[i]) {
+			continue;
+		}
+		else if (strcmp(this->entries[i]->getWebsite(), website) == 0) {
 			delete this->entries[i];
 
 			for (size_t j = i; j < this->size - 1; j++) {
@@ -218,6 +223,125 @@ void DataVault::list() const
 			<< " | "
 			<< this->entries[i]->getUsername()
 			<< '\n';
+	}
+}
+
+void DataVault::serialize(std::ostream& out) const
+{
+	if (!out) {
+		throw std::runtime_error("Invalid output stream!");
+	}
+
+	out << "DATA VAULT\n";
+	out << this->size << '\n';
+
+	this->defaultCipher->serialize(out);
+
+	for (size_t i = 0; i < this->size; i++) {
+		if (!this->entries[i]) {
+			continue;
+		}
+		this->entries[i]->serialize(out);
+	}
+
+	if (!out) {
+		throw std::runtime_error("Error while writing data vault!!");
+	}
+}
+
+void DataVault::deserialize(std::istream& in)
+{
+	if (!in) {
+		throw std::runtime_error("Invalid input stream!");
+	}
+
+	for (size_t i = 0; i < this->size; i++) {
+		delete this->entries[i];
+		this->entries[i] = nullptr;
+	}
+
+	delete this->defaultCipher;
+	this->defaultCipher = nullptr;
+
+	this->size = 0;
+
+	//reading the new data
+	char buffer[BUFFER_LEN];
+	in.getline(buffer, BUFFER_LEN);
+
+	if (strcmp(buffer, "DATA VAULT") != 0) {
+		throw std::runtime_error("Corrupted file!");
+	}
+
+	size_t entriesCount = 0;
+	in >> entriesCount;
+	in.ignore();
+
+	this->defaultCipher = CipherFactory::readCipher(in);
+
+	while (allocated < entriesCount) {
+		resize();
+	}
+
+	for (size_t i = 0; i < entriesCount; i++) {
+		in.getline(buffer, BUFFER_LEN);
+
+		if (strcmp(buffer, "ENTRY") != 0) {
+			for (size_t j = 0; j < i; j++) {
+				delete this->entries[j];
+				this->entries[j] = nullptr;
+			}
+
+			delete this->defaultCipher;
+			this->defaultCipher = nullptr;
+
+			throw std::runtime_error("Corrupted entry!");
+		}
+
+		char website[BUFFER_LEN];
+		char username[BUFFER_LEN];
+		char encryptedPassword[BUFFER_LEN];
+
+		in.getline(website, BUFFER_LEN);
+		in.getline(username, BUFFER_LEN);
+
+		Cipher* cipher = nullptr;
+		try {
+			cipher = CipherFactory::readCipher(in);
+		}
+		catch (...) {
+			for (size_t j = 0; j < i; j++) {
+				delete this->entries[j];
+				this->entries[j] = nullptr;
+			}
+
+			delete this->defaultCipher;
+			this->defaultCipher = nullptr;
+
+			throw;
+		}
+
+		in.getline(encryptedPassword, BUFFER_LEN);
+
+		try {
+			this->entries[this->size] = PasswordEntry::createFromEncrypted(website, username, encryptedPassword, cipher);
+			this->size += 1;
+		}
+		catch (...) {
+			for (size_t j = 0; j < i; j++) {
+				delete this->entries[j];
+				this->entries[j] = nullptr;
+			}
+
+			delete this->defaultCipher;
+			this->defaultCipher = nullptr;
+
+			delete cipher;
+		}
+	}
+
+	if (!in) {
+		throw std::runtime_error("Error while reading data vault!");
 	}
 }
 

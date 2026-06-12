@@ -23,10 +23,14 @@ public:
 	const char* getPassword() const;
 	void serialize(std::ostream& out) const;
 	bool isMatch(const char* website, const char* username) const;
+	static PasswordEntry* createFromEncrypted(const char* website, const char* username, const char* encryptedPassword, Cipher* cipher);
 
 private:
 	char* website;
 	char* username;
 	char* encryptedPassword; //PasswordEntry keeps ONLY the ENCRYPTED password
 	Cipher* cipher;
+
+	//helper ctor
+	PasswordEntry(const char* website, const char* username, const char* password, Cipher* cipher, bool alreadyEncrypted);
 };
