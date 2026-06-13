@@ -3,6 +3,7 @@
 
 class Matrix {
 public:
+	Matrix() = delete;
 	Matrix(size_t rows, size_t cols);
 	Matrix(const Matrix& other);
 	Matrix& operator= (const Matrix& other);
