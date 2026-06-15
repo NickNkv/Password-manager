@@ -33,4 +33,6 @@ private:
 	int** data;
 	size_t rows;
 	size_t cols;
+
+	//private helpers
 };
