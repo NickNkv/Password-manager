@@ -5,13 +5,13 @@
 #define BASE_LIMIT 32
 #define CEIL_LIMIT 126  //ASCII in range of [BASE_LIMIT, CEIL_LIMIT]
 
-CaeserCipher::CaeserCipher(int shift)
+CaesarCipher::CaesarCipher(int shift)
 {
 	this->shift = shift;
 }
 
 //overrides
-char* CaeserCipher::encrypt(const char* text) const
+char* CaesarCipher::encrypt(const char* text) const
 {
 	if (!text || strlen(text) == 0) {
 		throw std::invalid_argument("Text can not be nullptr or empty!");
@@ -42,7 +42,7 @@ char* CaeserCipher::encrypt(const char* text) const
 	return encryptedText;
 }
 
-char* CaeserCipher::decrypt(const char* text) const
+char* CaesarCipher::decrypt(const char* text) const
 {
 	if (!text || strlen(text) == 0) {
 		throw std::invalid_argument("Text can not be nullptr or empty!");
@@ -68,7 +68,7 @@ char* CaeserCipher::decrypt(const char* text) const
 	return decryptedText;
 }
 
-void CaeserCipher::serialize(std::ostream& out) const
+void CaesarCipher::serialize(std::ostream& out) const
 {
 	if (!out) {
 		throw std::invalid_argument("Invalid output stream!");
@@ -82,13 +82,13 @@ void CaeserCipher::serialize(std::ostream& out) const
 	}
 }
 
-CaeserCipher* CaeserCipher::clone() const
+CaesarCipher* CaesarCipher::clone() const
 {
-	return new CaeserCipher(*this);
+	return new CaesarCipher(*this);
 }
 
-const char* CaeserCipher::getType() const
+const char* CaesarCipher::getType() const
 {
-	return "CAESER";
+	return "CAESAR";
 }
 

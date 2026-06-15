@@ -1,5 +1,6 @@
 #include "Utils.hpp"
 #include <iostream>
+#include <fstream>
 
 int utils::gcd(int a, int b)
 {
@@ -37,4 +38,32 @@ int utils::modInverse(int a, int module)
     }
 
     throw std::invalid_argument("Modular inverse does not exist!");
+}
+
+char* utils::readFile(const char* filePath)
+{
+    if (!filePath || strlen(filePath) == 0) {
+        throw std::invalid_argument("File path can not be nullptr or empty!");
+    }
+
+    std::ifstream in(filePath);
+
+    if (!in.is_open()) {
+        throw std::runtime_error("Cannot open file!");
+    }
+
+    in.seekg(0, std::ios::end);
+    size_t size = in.tellg();
+    in.seekg(0, std::ios::beg);
+
+    char* content = new char[size + 1];
+    in.read(content, size);
+    content[size] = '\0';
+
+    if (!in && !in.eof()) {
+        delete[] content;
+        throw std::runtime_error("Error while reading file!");
+    }
+
+    return content;
 }
