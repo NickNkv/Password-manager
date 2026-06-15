@@ -10,5 +10,5 @@ public:
 	virtual Cipher* clone() const = 0;
 	virtual const char* getType() const = 0;
 
-	virtual ~Cipher() = default;
+	virtual ~Cipher() {};
 };
