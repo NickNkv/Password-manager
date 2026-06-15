@@ -4,6 +4,10 @@
 //lifecycle
 Matrix::Matrix(size_t rows, size_t cols)
 {
+	if (rows == 0 || cols == 0) {
+		throw std::invalid_argument("Matrix dimensions must be positive!");
+	}
+
 	this->rows = rows;
 	this->cols = cols;
 
@@ -129,11 +133,35 @@ size_t Matrix::getCols() const
 
 int Matrix::determinant() const
 {
-	return 0;
+	if (this->rows != this->cols) {
+		throw std::invalid_argument("Matrix must be square!");
+	}
+
+	if (this->rows == 1) {
+		return this->data[0][0];
+	}
+
+	if (this->rows == 2) {
+		return this->data[0][0] * this->data[1][1] - this->data[0][1] * this->data[1][0];
+	}
+
+	int det = 0;
+	for (size_t col = 0; col < this->cols; col++) {
+		Matrix minor = getMinor(0, col);
+
+		int sign = (col % 2 == 0) ? 1 : -1;
+		det += sign * this->data[0][col] * minor.determinant();
+	}
+
+	return det;
 }
 
 bool Matrix::isInvertableMod26() const
 {
+	if (this->rows != this->cols) {
+		return false;
+	}
+
 	int det = determinant();
 
 	det %= 26;
@@ -142,6 +170,58 @@ bool Matrix::isInvertableMod26() const
 	}
 
 	return utils::gcd(det, 26) == 1;
+}
+
+Matrix Matrix::transpose() const
+{
+	Matrix result(this->rows, this->cols);
+
+	for (size_t i = 0; i < this->rows; i++) {
+		for (size_t j = 0; j < this->cols; j++) {
+			result[j][i] = this->data[i][j];
+		}
+	}
+
+	return result;
+}
+
+Matrix Matrix::inverseMod26() const
+{
+	if (this->rows != this->cols) {
+		throw std::invalid_argument("Matrix must be square!");
+	}
+
+	if (!isInvertableMod26()) {
+		throw std::invalid_argument("Matrix is not invertable in modulo 26!");
+	}
+
+	int det = determinant();
+	det = utils::mod(det, 26);
+	int determinantInverse = utils::modInverse(det, 26);
+
+	Matrix cofactors(this->rows, this->cols);
+
+	for (size_t i = 0; i < this->rows; i++) {
+		for (size_t j = 0; j < this->cols; j++) {
+			Matrix minor = getMinor(i, j);
+
+			int sign = ((i + j) % 2 == 0) ? 1 : -1;
+			int value = sign * minor.determinant();
+
+			cofactors[i][j] = value;
+		}
+	}
+
+	Matrix adjugate = cofactors.transpose();
+	Matrix inverse(this->rows, this->cols);
+
+	for (size_t i = 0; i < this->rows; i++) {
+		for (size_t j = 0; j < this->cols; j++) {
+			inverse[i][j] = utils::mod(adjugate[i][j] * determinantInverse, 26);
+		}
+	}
+
+	return inverse;
 }
 
 void Matrix::serialize(std::ostream& out) const
@@ -217,4 +297,41 @@ Matrix Matrix::operator*(const Matrix& other) const
 	}
 
 	return result;
+}
+
+//private helpers
+Matrix Matrix::getMinor(size_t exclRow, size_t exclCol) const
+{
+	if (this->rows != this->cols) {
+		throw std::invalid_argument("Matrix must be square!");
+	}
+	if (exclCol >= this->rows) {
+		throw std::invalid_argument("Excluded row is outside of the matrix boundaries!");
+	}
+	if (exclCol >= this->cols) {
+		throw std::invalid_argument("Excluded col is outside of the matrix boundaries!");
+	}
+
+	Matrix minor(this->rows - 1, this->cols - 1);
+
+	size_t minorRow = 0;
+	for (size_t i = 0; i < this->rows; i++) {
+		if (i == exclRow) {
+			continue;
+		}
+
+		size_t minorCol = 0;
+		for (size_t j = 0; j < this->cols; j++) {
+			if (j == exclCol) {
+				continue;
+			}
+
+			minor[minorRow][minorCol] = this->data[i][j];
+			minorCol++;
+		}
+
+		minorRow++;
+	}
+
+	return minor;
 }

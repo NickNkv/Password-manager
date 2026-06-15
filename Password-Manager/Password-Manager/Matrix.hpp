@@ -15,11 +15,12 @@ public:
 	size_t getCols() const;
 
 	//setters
-	void setAt(size_t row, size_t col, int value);
+	//void setAt(size_t row, size_t col, int value);
 
 	//helpers
 	int determinant() const;
 	bool isInvertableMod26() const;
+	Matrix transpose() const;
 	Matrix inverseMod26() const;
 	void serialize(std::ostream& out) const;
 	static Matrix deserialize(std::istream& in);
@@ -35,4 +36,5 @@ private:
 	size_t cols;
 
 	//private helpers
+	Matrix getMinor(size_t exclRow, size_t exclCol) const;
 };
