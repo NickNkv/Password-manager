@@ -177,6 +177,16 @@ char* TextCodeCipher::decrypt(const char* text) const
 
 void TextCodeCipher::serialize(std::ostream& out) const
 {
+	if (!out) {
+		throw std::invalid_argument("Invalid output stream!");
+	}
+
+	out << getType() << '\n';
+	out << this->filePath << '\n';
+
+	if (!out) {
+		throw std::runtime_error("Error while writing cipher!");
+	}
 }
 
 TextCodeCipher* TextCodeCipher::clone() const
