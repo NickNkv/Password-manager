@@ -10,10 +10,10 @@ TextCodeCipher::TextCodeCipher(const char* filePath)
 		throw std::invalid_argument("File path can not be nullptr or empty!");
 	}
 
-	this->sourceText = utils::readFile(filePath);
+	char* sourceText = utils::readFile(filePath);
 	this->filePath = new (std::nothrow) char[strlen(filePath) + 1];
 	if (!this->filePath) {
-		delete[] this->sourceText;
+		delete[] sourceText;
 		throw std::bad_alloc();
 	}
 
@@ -22,11 +22,43 @@ TextCodeCipher::TextCodeCipher(const char* filePath)
 	for (size_t i = 0; i < LETTER_SET_LEN; i++) {
 		this->firstOccurance[i] = -1;
 	}
-	buildDictionary(this->sourceText);
+	buildDictionary(sourceText);
+
+	delete[] sourceText;
+}
+
+TextCodeCipher::TextCodeCipher(const TextCodeCipher& other)
+{
+	this->filePath = new char[strlen(other.filePath) + 1];
+	strcpy(this->filePath, other.filePath);
+
+	for (size_t i = 0; i < LETTER_SET_LEN; i++) {
+		this->firstOccurance[i] = other.firstOccurance[i];
+	}
+}
+
+TextCodeCipher& TextCodeCipher::operator=(const TextCodeCipher& other)
+{
+	if (this != &other) {
+		char* tempFilePath = new char[strlen(other.filePath) + 1];
+		strcpy(tempFilePath, other.filePath);
+
+		//point of no return
+		delete[] this->filePath;
+		this->filePath = tempFilePath;
+		tempFilePath = nullptr;
+
+		for (size_t i = 0; i < LETTER_SET_LEN; i++) {
+			this->firstOccurance[i] = other.firstOccurance[i];
+		}
+	}
+
+	return *this;
 }
 
 TextCodeCipher::~TextCodeCipher()
 {
+	delete[] this->filePath;
 }
 
 //overrides

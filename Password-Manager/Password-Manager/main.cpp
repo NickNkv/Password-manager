@@ -6,7 +6,7 @@
 
 int main()
 {
-    CaesarCipher a(1001);
+    CaesarCipher a(100);
     std::cout << a.decrypt("6789:;<=>5%yjxy%yj}y%");
 
     //Matrix m(5, 5);

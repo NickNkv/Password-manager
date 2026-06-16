@@ -20,8 +20,8 @@ public:
 
 private:
 	char* filePath;
-	char* sourceText;
 	int firstOccurance[LETTER_SET_LEN];
+	//char* sourceText;
 
 	//private helpers
 	void buildDictionary(const char* text);
