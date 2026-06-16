@@ -76,7 +76,30 @@ char* VigenereCipher::encrypt(const char* text) const
 
 char* VigenereCipher::decrypt(const char* text) const
 {
-	return nullptr;
+	if (!text || strlen(text) == 0) {
+		throw std::invalid_argument("Text can not be nullptr or empty!");
+	}
+
+	size_t textLength = strlen(text);
+	size_t keyLength = strlen(this->keyword);
+	char* decryptedText = new char[textLength + 1];
+
+	for (size_t i = 0; i < textLength; i++) {
+		char current = text[i];
+
+		if (current < BASE_LIMIT || current > CEIL_LIMIT) {
+			delete[] decryptedText;
+			throw std::invalid_argument("Unknown ASCII character!");
+		}
+
+		int shift = this->keyword[i % keyLength] - BASE_LIMIT;
+		int normalised = current - BASE_LIMIT;
+		normalised = utils::mod(normalised - shift, CEIL_LIMIT - BASE_LIMIT + 1);
+		decryptedText[i] = normalised + BASE_LIMIT;
+	}
+
+	decryptedText[textLength] = '\0';
+	return decryptedText;
 }
 
 void VigenereCipher::serialize(std::ostream& out) const
