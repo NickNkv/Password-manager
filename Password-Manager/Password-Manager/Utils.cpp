@@ -67,3 +67,32 @@ char* utils::readFile(const char* filePath)
 
     return content;
 }
+
+char* utils::intToString(int a)
+{
+    char* str = new char[20];
+    int length = 0;
+
+    if (a == 0) {
+        str[0] = '0';
+        str[1] = '\0';
+        return str;
+    }
+
+    while (a > 0) {
+        str[length] = (a % 10) + '0';
+        length++;
+        a /= 10;
+    }
+
+    str[length] = '\0';
+
+    //reverse the string
+    for (int i = 0; i < length / 2; i++) {
+        char temp = str[i];
+        str[i] = str[length - 1 - i];
+        str[length - 1 - i] = temp;
+    }
+
+    return str;
+}

@@ -21,7 +21,7 @@ public:
 private:
 	char* filePath;
 	int firstOccurance[LETTER_SET_LEN];
-	//char* sourceText;
+	char* sourceText;
 
 	//private helpers
 	void buildDictionary(const char* text);
