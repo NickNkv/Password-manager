@@ -1,8 +1,12 @@
 #include "CipherFactory.hpp"
 
 #include "CaesarCipher.hpp"
+#include "TextCodeCipher.hpp"
+#include "HillCipher.hpp"
+#include "VigenereCipher.hpp"
 
 #define TYPE_LEN 256
+#define FILEPATH_LEN 256 //for TextCode
 
 Cipher* CipherFactory::createCipher(std::ostream& out, std::istream& in)
 {
@@ -46,13 +50,21 @@ Cipher* CipherFactory::readCipher(std::istream& in)
         return new CaesarCipher(shift);
     }
     else if (strcmp(type, "TEXTCODE") == 0) {
-        //TODO
+        char filePath[FILEPATH_LEN];
+        in.getline(filePath, FILEPATH_LEN);
+        
+        return new TextCodeCipher(filePath);
     }
     else if (strcmp(type, "HILL") == 0) {
-        //TODO
+        Matrix key = Matrix::deserialize(in);
+        
+        return new HillCipher(key);
     }
     else if (strcmp(type, "VIGENERE") == 0) {
-        //TODO
+        char keyword[FILEPATH_LEN];
+        in.getline(keyword, FILEPATH_LEN);
+
+        return new VigenereCipher(keyword);
     }
     else {
         throw std::runtime_error("Unknown cipher!");
