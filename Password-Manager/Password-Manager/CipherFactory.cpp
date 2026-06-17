@@ -21,12 +21,46 @@ Cipher* CipherFactory::createCipher(std::ostream& out, std::istream& in)
     in >> choice;
 
     switch (choice) {
-    case 1:
+    case 1: {
         int shift;
         out << "Shift: ";
         in >> shift;
-
         return new CaesarCipher(shift);
+    }
+
+    case 2: {
+        char filePath[FILEPATH_LEN];
+        out << "File path: ";
+        in.ignore();
+        in.getline(filePath, FILEPATH_LEN);
+        return new TextCodeCipher(filePath);
+    }
+
+    case 3: {
+        //I could use matrix.serialize() 
+        //but I want to add UX with messages
+        size_t n;
+        out << "Matrix size (n x n): ";
+        in >> n;
+
+        Matrix key(n, n);
+        out << "Enter matrix values:\n";
+        for (size_t i = 0; i < n; i++) {
+            for (size_t j = 0; j < n; j++) {
+                in >> key[i][j];
+            }
+        }
+
+        return new HillCipher(key);
+    }
+
+    case 4: {
+        char keyword[FILEPATH_LEN];
+        out << "Keyword: ";
+        in.ignore();
+        in.getline(keyword, FILEPATH_LEN);
+        return new VigenereCipher(keyword);
+    }
 
     default:
         throw std::invalid_argument("Invalid cipher code!");

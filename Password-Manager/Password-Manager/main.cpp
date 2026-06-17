@@ -7,6 +7,7 @@
 #include "TextCodeCipher.hpp"
 #include "VigenereCipher.hpp"
 #include "HillCipher.hpp"
+#include "PasswordManager.hpp"
 
 int main()
 {
@@ -19,14 +20,17 @@ int main()
     //CaesarCipher a(100);
    // std::cout << a.decrypt("6789:;<=>5%yjxy%yj}y%");
 
-    Matrix m(3, 3);
-    std::ifstream file("Matrix.txt");
-    m = Matrix::deserialize(file);
+    //Matrix m(3, 3);
+    //std::ifstream file("Matrix.txt");
+    //m = Matrix::deserialize(file);
 
-    HillCipher h(m);
-    char* encr = h.decrypt("UXQDFXNQYXSA");
-    std::cout << encr;
-    delete[] encr;
+    //HillCipher h(m);
+    //char* encr = h.decrypt("UXQDFXNQYXSA");
+    //std::cout << encr;
+    //delete[] encr;
+
+    PasswordManager p;
+    p.run(std::cout, std::cin);
 
     //// Check if the file was opened successfully
     //if (!file.is_open()) {
