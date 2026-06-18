@@ -115,6 +115,11 @@ void HillCipher::serialize(std::ostream& out) const
 	}
 }
 
+const char* HillCipher::serializeToText() const
+{
+	return nullptr;
+}
+
 HillCipher* HillCipher::clone() const
 {
 	return new HillCipher(*this);

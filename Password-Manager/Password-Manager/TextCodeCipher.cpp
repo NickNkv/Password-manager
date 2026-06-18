@@ -189,6 +189,11 @@ void TextCodeCipher::serialize(std::ostream& out) const
 	}
 }
 
+const char* TextCodeCipher::serializeToText() const
+{
+	return nullptr;
+}
+
 TextCodeCipher* TextCodeCipher::clone() const
 {
 	return new TextCodeCipher(*this);

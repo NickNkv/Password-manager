@@ -116,6 +116,11 @@ void VigenereCipher::serialize(std::ostream& out) const
 	}
 }
 
+const char* VigenereCipher::serializeToText() const
+{
+	return nullptr;
+}
+
 VigenereCipher* VigenereCipher::clone() const
 {
 	return new VigenereCipher(*this);

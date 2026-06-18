@@ -22,6 +22,7 @@ public:
 	//helpers
 	const char* getPassword() const;
 	void serialize(std::ostream& out) const;
+	const char* serializeToText() const;
 	bool isMatch(const char* website, const char* username) const;
 	static PasswordEntry* createFromEncrypted(const char* website, const char* username, const char* encryptedPassword, Cipher* cipher);
 

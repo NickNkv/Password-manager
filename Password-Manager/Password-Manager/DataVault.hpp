@@ -22,7 +22,7 @@ public:
 	void list() const;
 	void serialize(std::ostream& out) const;
 	void deserialize(std::istream& in);
-
+	const char* serializeToText() const;
 
 private:
 	size_t size;

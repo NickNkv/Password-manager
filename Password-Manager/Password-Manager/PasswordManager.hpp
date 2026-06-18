@@ -16,18 +16,20 @@ public:
 private:
 	DataVault* dataVault;
 	char* fileName;
+	char* masterPassword;
 	bool isOpen;
 	bool isModified;
 
 	//private helpers
-	void create(const char* fileName);
-	void open(const char* fileName);
-	void close();
+	void create(const char* fileName, std::ostream& out, std::istream& in);
+	void open(const char* fileName, std::ostream& out, std::istream& in);
+	void close(std::ostream& out, std::istream& in);
 	void save();
 	void saveAs(const char* fileName);
-	void help() const; 
-	void add();
-	void remove(const char* website);
-	void change(const char* website);
-	void print() const;
+	void load(const char* website, const char* user = nullptr);
+	void update(const char* website);
+	void remove(const char* website); // > delete <website> [<user>]
+	void list();
+	void exit();
+	void help(std::ostream& out) const;
 };

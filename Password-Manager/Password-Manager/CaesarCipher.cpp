@@ -1,7 +1,7 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "CaesarCipher.hpp"
 #include "Utils.hpp"
 #include <iostream>
-#define _CRT_SECURE_NO_WARNINGS
 #define BASE_LIMIT 32
 #define CEIL_LIMIT 126  //ASCII in range of [BASE_LIMIT, CEIL_LIMIT]
 
@@ -80,6 +80,21 @@ void CaesarCipher::serialize(std::ostream& out) const
 	if (!out) {
 		throw std::runtime_error("Error while writing cipher! Possible corrupted writing!");
 	}
+}
+
+const char* CaesarCipher::serializeToText() const
+{
+	size_t strLen = strlen(getType()) + 4;
+	strLen += strlen(utils::intToString(this->shift));
+	char* text = new char[strLen];
+	text[0] = '\0';
+
+	strcat(text, getType());
+	strcat(text, "\n");
+	strcat(text, utils::intToString(this->shift));
+	strcat(text, "\n");
+
+	return text;
 }
 
 CaesarCipher* CaesarCipher::clone() const

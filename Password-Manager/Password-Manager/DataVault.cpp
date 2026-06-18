@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "DataVault.hpp"
 #include "CipherFactory.hpp"
+#include "Utils.hpp"
 #include <iostream>
 #define ALLOC_STEP 8
 #define BUFFER_LEN 256
@@ -343,6 +344,62 @@ void DataVault::deserialize(std::istream& in)
 	if (!in) {
 		throw std::runtime_error("Error while reading data vault!");
 	}
+}
+
+const char* DataVault::serializeToText() const
+{
+	size_t strSize = 15; //DATA VAULT + '\0' + '\n'
+	strSize += strlen(utils::intToString(this->size));
+	const char* defCipherText = this->defaultCipher->serializeToText();
+	strSize += strlen(defCipherText);
+
+	for (size_t i = 0; i < this->size; i++) {
+		if (!this->entries[i]) {
+			continue;
+		}
+		
+		try {
+			const char* temp = this->entries[i]->serializeToText();
+			strSize += strlen(temp);
+			delete[] temp;
+		}
+		catch (...) {
+			delete[] defCipherText;
+			throw std::bad_alloc();
+		}
+	}
+
+	char* vaultText = new (std::nothrow) char[strSize];
+	if (!vaultText) {
+		delete[] defCipherText;
+		throw std::bad_alloc();
+	}
+
+	vaultText[0] = '\0';
+	strcat(vaultText, "DATA VAULT\n");
+	strcat(vaultText, utils::intToString(this->size));
+	strcat(vaultText, "\n");
+	strcat(vaultText, defCipherText);
+	
+	for (size_t i = 0; i < this->size; i++) {
+		if (!this->entries[i]) {
+			continue;
+		}
+		
+		try {
+			const char* temp = this->entries[i]->serializeToText();
+			strcat(vaultText, temp);
+			delete[] temp;
+		}
+		catch (...) {
+			delete[] defCipherText;
+			delete[] vaultText;
+			throw std::bad_alloc();
+		}
+	}
+
+	delete[] defCipherText;
+	return vaultText;
 }
 
 //private helpers

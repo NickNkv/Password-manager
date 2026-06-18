@@ -9,6 +9,7 @@ public:
 	char* encrypt(const char* text) const override;
 	char* decrypt(const char* text) const override;
 	void serialize(std::ostream& out) const override;
+	const char* serializeToText() const override;
 	CaesarCipher* clone() const override;
 	const char* getType() const override;
 

@@ -206,6 +206,36 @@ void PasswordEntry::serialize(std::ostream& out) const
 	}
 }
 
+const char* PasswordEntry::serializeToText() const
+{
+	size_t strSize = 11; //ENTRY + '\0' + '\n'
+	strSize += strlen(this->website);
+	strSize += strlen(this->username);
+	strSize += strlen(this->encryptedPassword);
+	const char* cipherAsText = this->cipher->serializeToText();
+	strSize += strlen(cipherAsText);
+
+	char* passwordEntryText = new (std::nothrow) char[strSize];
+	if (!passwordEntryText) {
+		delete[] cipherAsText;
+		throw std::bad_alloc();
+	}
+	
+	passwordEntryText[0] = '\0';
+	strcat(passwordEntryText, "ENTRY\n");
+	strcat(passwordEntryText, this->website);
+	strcat(passwordEntryText, "\n");
+	strcat(passwordEntryText, this->username);
+	strcat(passwordEntryText, "\n");
+	strcat(passwordEntryText, cipherAsText);
+	strcat(passwordEntryText, this->encryptedPassword);
+	strcat(passwordEntryText, "\n");
+
+	delete[] cipherAsText;
+
+	return passwordEntryText;
+}
+
 bool PasswordEntry::isMatch(const char* website, const char* username) const
 {
 	if (!website || !username) {
