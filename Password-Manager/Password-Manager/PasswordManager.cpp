@@ -2,6 +2,7 @@
 #include "PasswordManager.hpp"
 #include "CipherFactory.hpp"
 #include "VigenereCipher.hpp"
+#include "PasswordEntry.hpp"
 #include <fstream>
 
 //lifecycle
@@ -63,7 +64,19 @@ void PasswordManager::run(std::ostream& out, std::istream& in)
 				close(out, in);
 			}
 			else if (strcmp(command, "save") == 0) {
-				save();
+				char* website = strtok(nullptr, " ");
+				if (!website) {
+					out << "Missing website name!\n";
+					continue;
+				}
+
+				char* user = strtok(nullptr, " ");
+				if (!user) {
+					out << "Missing username!\n";
+					continue;
+				}
+
+				save(website, user, out, in);
 			}
 			else if (strcmp(command, "saveas") == 0) {
 				char* fileName = strtok(nullptr, "");
@@ -115,6 +128,7 @@ void PasswordManager::create(const char* fileName, std::ostream& out, std::istre
 	if (this->isOpen) {
 		close(out, in);
 	}
+	out << "Default cipher: \n";
 	Cipher* defaultCipher = CipherFactory::createCipher(out, in);
 	this->dataVault = new DataVault(*defaultCipher);
 
@@ -137,7 +151,8 @@ void PasswordManager::create(const char* fileName, std::ostream& out, std::istre
 	this->isOpen = true;
 	this->isModified = false;
 
-	save();
+	saveChanges();
+	close(out, in);
 }
 
 void PasswordManager::open(const char* fileName, std::ostream& out, std::istream& in)
@@ -150,9 +165,10 @@ void PasswordManager::open(const char* fileName, std::ostream& out, std::istream
 		close(out, in);
 	}
 
+	this->dataVault = new DataVault(VigenereCipher("temp"));//dummy
+
 	char password[256];
 	out << "File password: ";
-	in.ignore();
 	in.getline(password, 256);
 
 	char* tempFileName = new char[strlen(fileName) + 1];
@@ -208,7 +224,7 @@ void PasswordManager::open(const char* fileName, std::ostream& out, std::istream
 
 void PasswordManager::close(std::ostream& out, std::istream& in)
 {
-	if (this->isOpen) {
+	if (!this->isOpen) {
 		out << "There are no open files\n";
 	}
 
@@ -222,7 +238,7 @@ void PasswordManager::close(std::ostream& out, std::istream& in)
 		char* command = strtok(line, " ");
 
 		if (strcmp(command, "yes") == 0) {
-			save();
+			saveChanges();
 			out << "Changes saved!";
 		}
 		else if (strcmp(command, "no") == 0) {
@@ -241,11 +257,29 @@ void PasswordManager::close(std::ostream& out, std::istream& in)
 	this->masterPassword = nullptr;
 	this->isOpen = false;
 	this->isModified = false;
-
-	out << "File is closed\n";
 }
 
-void PasswordManager::save()
+void PasswordManager::save(const char* website, const char* user, std::ostream& out, std::istream& in)
+{
+	if (!this->isOpen) {
+		throw std::runtime_error("No open file!");
+	}
+
+	Cipher* cipher = CipherFactory::createCipher(out, in);
+
+	char password[256];
+	out << "Website password: ";
+	in.ignore();
+	in.getline(password, 256);
+	PasswordEntry entry(website, user, password, *cipher);
+	this->dataVault->addEntry(entry);
+	delete cipher;
+	this->isModified = true;
+
+	saveChanges();
+}
+
+void PasswordManager::saveChanges()
 {
 	if (!this->isOpen) {
 		throw std::runtime_error("No open file!");

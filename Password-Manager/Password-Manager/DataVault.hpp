@@ -20,7 +20,7 @@ public:
 	void removeEntry(const char* website, const char* name);
 	void removeWebsite(const char* website);
 	void list() const;
-	void serialize(std::ostream& out) const;
+	void serialize(std::ostream& out);
 	void deserialize(std::istream& in);
 	const char* serializeToText() const;
 

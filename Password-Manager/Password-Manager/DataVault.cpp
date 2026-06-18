@@ -227,7 +227,7 @@ void DataVault::list() const
 	}
 }
 
-void DataVault::serialize(std::ostream& out) const
+void DataVault::serialize(std::ostream& out)
 {
 	if (!out) {
 		throw std::runtime_error("Invalid output stream!");

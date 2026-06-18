@@ -24,7 +24,8 @@ private:
 	void create(const char* fileName, std::ostream& out, std::istream& in);
 	void open(const char* fileName, std::ostream& out, std::istream& in);
 	void close(std::ostream& out, std::istream& in);
-	void save();
+	void save(const char* website, const char* user, std::ostream& out, std::istream& in);
+	void saveChanges();
 	void saveAs(const char* fileName);
 	void load(const char* website, const char* user = nullptr);
 	void update(const char* website);

@@ -12,7 +12,7 @@
 int main()
 {
     //VigenereCipher v("banana");
-    //char* t = v.decrypt("YJ^F");
+    //char* t = v.decrypt("s");
     //std::cout << t;
     //std::cout << utils::intToString(707);
     //TextCodeCipher t("Source.txt");
