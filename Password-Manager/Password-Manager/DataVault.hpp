@@ -19,6 +19,8 @@ public:
 	void updateEntry(const char* website, const char* username, const char* newPassword);
 	void removeEntry(const char* website, const char* name);
 	void removeWebsite(const char* website);
+	size_t countByWebsite(const char* website) const;
+	PasswordEntry** findByWebsite(const char* website) const;
 	void list() const;
 	void serialize(std::ostream& out);
 	void deserialize(std::istream& in);

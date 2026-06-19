@@ -27,10 +27,9 @@ private:
 	void save(const char* website, const char* user, std::ostream& out, std::istream& in);
 	void saveChanges();
 	void saveAs(const char* fileName);
-	void load(const char* website, const char* user = nullptr);
-	void update(const char* website);
-	void remove(const char* website); // > delete <website> [<user>]
+	void load(std::ostream& out, std::istream& in, const char* website, const char* user = nullptr);
+	void update(const char* website, const char* user, const char* newPassword);
+	void remove(std::ostream& out, std::istream& in, const char* website, const char* user); // > delete <website> [<user>]
 	void list();
-	void exit();
 	void help(std::ostream& out) const;
 };

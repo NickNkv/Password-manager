@@ -70,7 +70,7 @@ void PasswordManager::run(std::ostream& out, std::istream& in)
 					continue;
 				}
 
-				char* user = strtok(nullptr, " ");
+				char* user = strtok(nullptr, "");
 				if (!user) {
 					out << "Missing username!\n";
 					continue;
@@ -89,19 +89,60 @@ void PasswordManager::run(std::ostream& out, std::istream& in)
 				saveAs(fileName);
 			}
 			else if (strcmp(command, "load") == 0) {
-				load(nullptr);
+				char* website = strtok(nullptr, " ");
+				if (!website) {
+					out << "Missing website name!\n";
+					continue;
+				}
+
+				char* user = strtok(nullptr, " ");
+				if (!user) {
+					user = nullptr;
+				}
+				
+				load(out, in, website, user);
 			}
 			else if (strcmp(command, "update") == 0) {
-				update(nullptr);
+				char* website = strtok(nullptr, " ");
+				if (!website) {
+					out << "Missing website name!\n";
+					continue;
+				}
+
+				char* user = strtok(nullptr, " ");
+				if (!user) {
+					out << "Missing user!\n";
+					continue;
+				}
+
+				char* newPassword = strtok(nullptr, "");
+				if (!newPassword) {
+					out << "Missing new password!\n";
+					continue;
+				}
+
+				update(website, user, newPassword);
 			}
 			else if (strcmp(command, "delete") == 0) {
-				remove(nullptr);
+				char* website = strtok(nullptr, " ");
+				if (!website) {
+					out << "Missing website name!\n";
+					continue;
+				}
+
+				char* user = strtok(nullptr, " ");
+				if (!user) {
+					user = nullptr;
+				}
+
+				remove(out, in, website, user);
 			}
 			else if (strcmp(command, "list") == 0) {
 				list();
 			}
 			else if (strcmp(command, "exit") == 0) {
-				exit();
+				close(out, in);
+				break;
 			}
 			else if (strcmp(command, "help") == 0) {
 				help(out);
@@ -232,7 +273,6 @@ void PasswordManager::close(std::ostream& out, std::istream& in)
 		char line[5];
 		out << "Do you want to save the changes on your file (yes/no)?\n";
 		out << "Answer: ";
-		in.ignore();
 		in.getline(line, 5);
 
 		char* command = strtok(line, " ");
@@ -332,23 +372,90 @@ void PasswordManager::saveAs(const char* fileName)
 {
 }
 
-void PasswordManager::load(const char* website, const char* user)
+void PasswordManager::load(std::ostream& out, std::istream& in, const char* website, const char* user)
 {
+	if (!this->isOpen) {
+		throw std::runtime_error("No open file!\n");
+	}
+
+	//if we search by user
+	if (user) {
+		PasswordEntry* entry = this->dataVault->find(website, user);
+		if (!entry) {
+			throw std::runtime_error("Website and user not found!\n");
+		}
+
+		out << "Password: " << entry->getPassword() << '\n';
+	}
+	else { //if we search by website only  
+		size_t count = this->dataVault->countByWebsite(website);
+		if (count == 0) {
+			throw std::runtime_error("No password entries for this website!\n");
+		}
+
+		PasswordEntry** entries = this->dataVault->findByWebsite(website);
+
+		for (size_t i = 0; i < count; i++) {
+			out << "User: " << entries[i]->getUsername() << '\n';
+			out << "Password: " << entries[i]->getPassword() << '\n';
+			out << '\n';
+		}
+
+		delete[] entries;
+	}
 }
 
-void PasswordManager::update(const char* website)
+void PasswordManager::update(const char* website, const char* user, const char* newPassword)
 {
+	if (!this->isOpen) {
+		throw std::runtime_error("No open file!\n");
+	}
+
+	PasswordEntry* entry = this->dataVault->find(website, user);
+	if (!entry) {
+		throw std::runtime_error("There is no password for these website and user!\n");
+	}
+
+	if (strcmp(entry->getPassword(), newPassword) == 0) {
+		throw std::runtime_error("New password is the same as the old one!\n");
+	}
+
+	entry->updatePassword(newPassword);
+	this->isModified = true;
 }
 
-void PasswordManager::remove(const char* website)
+void PasswordManager::remove(std::ostream& out, std::istream& in, const char* website, const char* user)
 {
+	if (!this->isOpen) {
+		throw std::runtime_error("No open file!\n");
+	}
+
+	//if we delete by user
+	if (user) {
+		this->dataVault->removeEntry(website, user);
+		this->isModified = true;
+	}
+	else {
+		size_t count = this->dataVault->countByWebsite(website);
+		if (count == 0) {
+			throw std::runtime_error("There are no passwords for this website!\n");
+		}
+
+		char answer[16];
+		out << "Delete all " << count << " entries for " << website << "?\n(yes/no): ";
+		in.getline(answer, 16);
+
+		if (strcmp(answer, "yes") != 0) {
+			return;
+		}
+
+		this->dataVault->removeWebsite(website);
+		out << count << " entries deleted\n";
+		this->isModified = true;
+	}
 }
 
 void PasswordManager::list()
-{
-}
-
-void PasswordManager::exit()
 {
 }
 

@@ -215,6 +215,35 @@ void DataVault::removeWebsite(const char* website)
 	}
 }
 
+size_t DataVault::countByWebsite(const char* website) const
+{
+	size_t count = 0;
+
+	for (size_t i = 0; i < this->size; i++) {
+		if (strcmp(this->entries[i]->getWebsite(), website) == 0) {
+			count++;
+		}
+	}
+
+	return count;
+}
+
+PasswordEntry** DataVault::findByWebsite(const char* website) const
+{
+	size_t count = countByWebsite(website);
+	size_t index = 0;
+	PasswordEntry** result = new PasswordEntry*[count];
+
+	for (size_t i = 0; i < this->size; i++) {
+		if (strcmp(this->entries[i]->getWebsite(), website) == 0) {
+			result[index] = this->entries[i];
+			index++;
+		}
+	}
+
+	return result;
+}
+
 void DataVault::list() const
 {
 	//TODO pagination
