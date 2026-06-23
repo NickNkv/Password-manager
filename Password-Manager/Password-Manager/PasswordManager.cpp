@@ -46,7 +46,7 @@ void PasswordManager::run(std::ostream& out, std::istream& in)
 			if (strcmp(command, "create") == 0) {
 				char* fileName = strtok(nullptr, "");
 				if (!fileName) {
-					out << "Misssing file name!\n";
+					out << "Misssing file name!\n\n";
 					continue;
 				}
 				create(fileName, out, in);
@@ -54,7 +54,7 @@ void PasswordManager::run(std::ostream& out, std::istream& in)
 			else if (strcmp(command, "open") == 0) {
 				char* fileName = strtok(nullptr, "");
 				if (!fileName) {
-					out << "Misssing file name!\n";
+					out << "Misssing file name!\n\n";
 					continue;
 				}
 
@@ -66,32 +66,22 @@ void PasswordManager::run(std::ostream& out, std::istream& in)
 			else if (strcmp(command, "save") == 0) {
 				char* website = strtok(nullptr, " ");
 				if (!website) {
-					out << "Missing website name!\n";
+					out << "Missing website name!\n\n";
 					continue;
 				}
 
 				char* user = strtok(nullptr, "");
 				if (!user) {
-					out << "Missing username!\n";
+					out << "Missing username!\n\n";
 					continue;
 				}
 
 				save(website, user, out, in);
 			}
-			else if (strcmp(command, "saveas") == 0) {
-				char* fileName = strtok(nullptr, "");
-
-				if (!fileName) {
-					out << "Missing file name!\n";
-					continue;
-				}
-
-				saveAs(fileName);
-			}
 			else if (strcmp(command, "load") == 0) {
 				char* website = strtok(nullptr, " ");
 				if (!website) {
-					out << "Missing website name!\n";
+					out << "Missing website name!\n\n";
 					continue;
 				}
 
@@ -105,19 +95,19 @@ void PasswordManager::run(std::ostream& out, std::istream& in)
 			else if (strcmp(command, "update") == 0) {
 				char* website = strtok(nullptr, " ");
 				if (!website) {
-					out << "Missing website name!\n";
+					out << "Missing website name!\n\n";
 					continue;
 				}
 
 				char* user = strtok(nullptr, " ");
 				if (!user) {
-					out << "Missing user!\n";
+					out << "Missing user!\n\n";
 					continue;
 				}
 
 				char* newPassword = strtok(nullptr, "");
 				if (!newPassword) {
-					out << "Missing new password!\n";
+					out << "Missing new password!\n\n";
 					continue;
 				}
 
@@ -126,7 +116,7 @@ void PasswordManager::run(std::ostream& out, std::istream& in)
 			else if (strcmp(command, "delete") == 0) {
 				char* website = strtok(nullptr, " ");
 				if (!website) {
-					out << "Missing website name!\n";
+					out << "Missing website name!\n\n";
 					continue;
 				}
 
@@ -138,7 +128,7 @@ void PasswordManager::run(std::ostream& out, std::istream& in)
 				remove(out, in, website, user);
 			}
 			else if (strcmp(command, "list") == 0) {
-				list();
+				list(out, in);
 			}
 			else if (strcmp(command, "exit") == 0) {
 				close(out, in);
@@ -148,14 +138,14 @@ void PasswordManager::run(std::ostream& out, std::istream& in)
 				help(out);
 			}
 			else {
-				out << "Unknown command!\n";
+				out << "Unknown command! Type [help] to see all commands!\n\n";
 			}
 		}
 		catch (std::bad_alloc()) {
-			out << "Memory allocation error! Please try again!\n";
+			out << "Memory allocation error! Please try again!\n\n";
 		}
 		catch (const std::exception& e) {
-			out << "Error: " << e.what() << '\n';
+			out << "Error: " << e.what() << "\n\n";
 		}
 	}
 }
@@ -175,7 +165,6 @@ void PasswordManager::create(const char* fileName, std::ostream& out, std::istre
 
 	char password[256];
 	out << "File password: ";
-	in.ignore();
 	in.getline(password, 256);
 
 	this->fileName = new char[strlen(fileName) + 1];
@@ -251,10 +240,17 @@ void PasswordManager::open(const char* fileName, std::ostream& out, std::istream
 		throw std::runtime_error("Can not open temp file!");
 	}
 
-	this->dataVault->deserialize(tempIn);
+	try {
+		this->dataVault->deserialize(tempIn);
+	}
+	catch (...) {
+		tempIn.close();
+		std::remove("_temp_.txt");
+		throw;
+	}
+
 	tempIn.close();
 	std::remove("_temp_.txt");
-	
 	delete[] this->fileName;
 	this->fileName = tempFileName;
 	delete[] this->masterPassword;
@@ -309,7 +305,6 @@ void PasswordManager::save(const char* website, const char* user, std::ostream& 
 
 	char password[256];
 	out << "Website password: ";
-	in.ignore();
 	in.getline(password, 256);
 	PasswordEntry entry(website, user, password, *cipher);
 	this->dataVault->addEntry(entry);
@@ -366,10 +361,6 @@ void PasswordManager::saveChanges()
 	std::remove(this->fileName);
 	std::rename("_temp_.txt", this->fileName);
 	this->isModified = false;
-}
-
-void PasswordManager::saveAs(const char* fileName)
-{
 }
 
 void PasswordManager::load(std::ostream& out, std::istream& in, const char* website, const char* user)
@@ -434,8 +425,9 @@ void PasswordManager::remove(std::ostream& out, std::istream& in, const char* we
 	if (user) {
 		this->dataVault->removeEntry(website, user);
 		this->isModified = true;
+		out << "Deletes: " << user << "'s data for " << website << "\n";
 	}
-	else {
+	else { //if we delete by website
 		size_t count = this->dataVault->countByWebsite(website);
 		if (count == 0) {
 			throw std::runtime_error("There are no passwords for this website!\n");
@@ -455,12 +447,23 @@ void PasswordManager::remove(std::ostream& out, std::istream& in, const char* we
 	}
 }
 
-void PasswordManager::list()
+void PasswordManager::list(std::ostream& out, std::istream& in)
 {
+	size_t pageLen = 5;
+	this->dataVault->list(out, in, pageLen);
 }
 
 void PasswordManager::help(std::ostream& out) const
 {
 	out << "List of all commands:\n";
-	out << "create <filename> <cipher> <password>\n";
+	out << "> create <filename> - creates an encrypted file with default cipher\n";
+	out << "> open <filename> - opens a file and asks for its password\n";
+	out << "> close - closes the curently opened file (asks whether to save changes)\n";
+	out << "> save <website> <user> - saves user and website and encrypted password\n";
+	out << "> load <website> [<user>] - shows the password for the website and user\n";
+	out << "> update <website> <user> <new-password> - changes the password\n";
+	out << "> delete <website> [<user>] - deletes user login in <website> or deletes all logins for <website>\n";
+	out << "> list - list the website and user data (without the passwords)\n";
+	out << "> exit - exits the program (asks whether to save changes)\n";
+	out << "\n";
 }

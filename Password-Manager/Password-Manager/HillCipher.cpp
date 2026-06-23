@@ -8,11 +8,11 @@ HillCipher::HillCipher(const Matrix& key) : key(key)
 {
 	//is the matrix square
 	if (key.getRows() != key.getCols()) {
-		throw std::invalid_argument("Key matrix must be square!");
+		throw std::invalid_argument("Key matrix must be square!\n");
 	}
 
 	if (!key.isInvertableMod26()) {
-		throw std::invalid_argument("Matrix must be invertable modulo 26!");
+		throw std::invalid_argument("Matrix must be invertable modulo 26!\n\n");
 	}
 }
 

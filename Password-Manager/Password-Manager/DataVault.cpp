@@ -121,6 +121,12 @@ DataVault::~DataVault()
 	delete this->defaultCipher;
 }
 
+//getters
+size_t DataVault::getSize() const
+{
+	return this->size;
+}
+
 //helpers
 void DataVault::addEntry(const PasswordEntry& entry)
 {
@@ -244,15 +250,28 @@ PasswordEntry** DataVault::findByWebsite(const char* website) const
 	return result;
 }
 
-void DataVault::list() const
+void DataVault::list(std::ostream& out, std::istream& in, size_t pageLen) const
 {
-	//TODO pagination
+	size_t index = 0;
+
 	for (size_t i = 0; i < this->size; i++) {
-		std::cout
-			<< this->entries[i]->getWebsite()
-			<< " | "
-			<< this->entries[i]->getUsername()
-			<< '\n';
+		out << this->entries[i]->getWebsite()
+		<< " | "
+		<< this->entries[i]->getUsername()
+		<< '\n';
+
+		index++;
+		if (index >= pageLen && i != this->size - 1) {
+			char answer[16];
+			out << "Do you want to see more entries? (yes/no): ";
+			in.getline(answer, 16);
+
+			if (strcmp(answer, "yes") != 0) {
+				break;
+			}
+
+			index = 0;
+		}
 	}
 }
 

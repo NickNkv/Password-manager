@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "Matrix.hpp"
 #include "Utils.hpp"
 
@@ -253,12 +254,37 @@ Matrix Matrix::deserialize(std::istream& in)
 	size_t rows = 0;
 	size_t cols = 0;
 
-	in >> rows >> cols;
+	char input[1024];
+	in.getline(input, 1024);
+
+	//reading rows
+	char* token = strtok(input, " ");
+	if (token == nullptr) {
+		throw std::invalid_argument("Invalid matrix!\n");
+	}
+	rows = utils::stringToInt(token);
+
+	//reading cols
+	token = strtok(input, " ");
+	if (token == nullptr) {
+		throw std::invalid_argument("Invalid matrix!\n");
+	}
+	cols = utils::stringToInt(token);
+
 	Matrix result(rows, cols);
 
+	///reading data
 	for (size_t i = 0; i < rows; i++) {
+		in.getline(input, 1024);
+		token = strtok(input, " ");
+
 		for (size_t j = 0; j < cols; j++) {
-			in >> result[i][j];
+			if (token == nullptr) {
+				throw std::invalid_argument("Invalid matrix!\n");
+			}
+
+			result[i][j] = utils::stringToInt(token);
+			token = strtok(nullptr, " ");
 		}
 	}
 

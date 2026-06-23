@@ -96,3 +96,51 @@ char* utils::intToString(int a)
 
     return str;
 }
+
+int utils::stringToInt(const char* num)
+{
+    int index = 0;
+    int sign = 1;
+    int result = 0;
+
+    if (num[0] == '-') {
+        sign = -1;
+        index++;
+    }
+    if (num[0] == '+') {
+        index++;
+    }
+
+    while (num[index] != '\0') {
+        result = result * 10 + (num[index] - '0');
+        index++;
+    }
+
+    return sign * result;
+}
+
+bool utils::isAnInt(const char* num)
+{
+    if (!num || strlen(num) == 0) {
+        return false;
+    }
+
+    int index = 0;
+
+    //sign + or - is allowed
+    if (num[0] == '+' || num[0] == '-') {
+        if (num[1] == '\0') {
+            return false;
+        }
+
+        index++;
+    }
+
+    for (int i = index; num[i] != '\0'; i++) {
+        if (num[i] < '0' || num[i] > '9') {
+            return false;
+        }
+    }
+
+    return true;
+}

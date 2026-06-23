@@ -11,7 +11,7 @@ public:
 	~DataVault();
 
 	//getters and setters
-	//may not be needed
+	size_t getSize() const;
 
 	//helpers
 	void addEntry(const PasswordEntry& entry);
@@ -21,7 +21,7 @@ public:
 	void removeWebsite(const char* website);
 	size_t countByWebsite(const char* website) const;
 	PasswordEntry** findByWebsite(const char* website) const;
-	void list() const;
+	void list(std::ostream& out, std::istream& in, size_t pageLen) const;
 	void serialize(std::ostream& out);
 	void deserialize(std::istream& in);
 	const char* serializeToText() const;
